@@ -1,0 +1,143 @@
+// import React from 'react'
+// import { render } from 'react-dom'
+import {
+  createStore,
+  compose,
+  bindActionCreators,
+  applyMiddleware,
+  combineReducers,
+} from "redux";
+
+//Use of compose();
+// const makeLoud = (string) => string.toUpperCase();
+// const embolden = (string) => string.bold();
+// const allInOne = compose(embolden, makeLoud);
+// console.log(allInOne("Hello from the other side"));
+
+//use of createStore
+// const initialState = { value: 0 };
+// const ADD = "ADD";
+// const INCREMENT = "INCREMENT";
+// const add = (amount) => {
+//   return {
+//     type: ADD,
+//     payload: amount,
+//   };
+// };
+// const increment = () => {
+//   return {
+//     type: INCREMENT,
+//   };
+// };
+
+// const reducer = (state = initialState, action) => {
+//   if (action.type === INCREMENT) {
+//     return { value: state.value + 1 };
+//   }
+//   if (action.type === ADD) {
+//     return { value: state.value + action.payload };
+//   }
+// };
+// const store = createStore(reducer);
+// const subscriber = () => console.log("SUBSCRIBER", store.getState());
+// // store.subscribe(subscriber);
+// // store.dispatch(add(3));
+// // store.dispatch(increment());
+// // store.dispatch(increment());
+// //multiple dispatch statements can be replaced with bindActionCreators
+// const actions = bindActionCreators({ increment, add }, store.dispatch);
+// actions.add(1000);
+// actions.increment();
+// console.log(store.getState());
+
+// A MORE COMPLEX STATE TO MANAGE
+// const initialState = {
+//   users: [
+//     { id: 1, name: "Shubham" },
+//     { id: 2, name: "Kirti" },
+//   ],
+//   tasks: [
+//     { title: "File the TPS reports" },
+//     { title: "Make an appointment with FDA officer" },
+//   ],
+// };
+
+// const ADD_USER = "ADD_USER";
+// const ADD_TASK = "ADD_TASK";
+
+// const addUser = (name) => ({ type: ADD_USER, payload: name });
+// const addTask = (title) => ({ type: ADD_TASK, payload: title });
+
+// const userReducer = (users = initialState.users, action) => {
+//   if (action.type === ADD_USER) {
+//     return [...users, action.payload];
+//   }
+//   return users;
+// };
+
+// const taskReducer = (tasks = initialState.tasks, action) => {
+//   if (action.type === ADD_TASK) {
+//     return [...tasks, action.payload];
+//   }
+//   return tasks;
+// };
+
+// const reducer = combineReducers({ users: userReducer, tasks: taskReducer });
+
+// USE OF ENHANCERS - THIRD ARGUMENT TO THE CREATESTORE FUNCTION
+const reducer = (state = { count: 1 }, action) => {
+  if (action.type === "HELLO") {
+    return { count: state.count + action.payload };
+  }
+  return state;
+};
+
+const monitoredEnhancer =
+  (createStore) => (reducer, initialState, enhancer) => {
+    const monitoredReducer = (state, action) => {
+      const start = performance.now();
+      const newState = reducer(state, action);
+      const end = performance.now();
+      const diff = end - start;
+      console.log(diff);
+      return newState;
+    };
+    return createStore(monitoredReducer, initialState, enhancer);
+  };
+
+// lets write an enhancer that logs the state before
+// and after the reducer is called.
+const logEnhancer = (createStore) => (reducer, initialState, enhancer) => {
+  const logReducer = (state, action) => {
+    console.log("Old state", state);
+    const newState = reducer(state, action);
+    console.log("New state", newState);
+    return newState;
+  };
+  return createStore(logReducer, initialState, enhancer);
+};
+
+// WHAT IF YOU WANT TO COMBINE MULTIPLE ENHANCERS?
+// USER A COMPOSE FUNCTION - compose(logEnhancer, monitoredEnhancer)
+
+// APPLY MIDDLEWARE - a curried function of three arguments
+const logMiddleware = (store) => (next) => (action) => {
+  console.log("Old state", store.getState());
+  next(action);
+  console.log("New state", store.getState());
+};
+
+const monitorMiddleware = (store) => (next) => (action) => {
+  const start = performance.now();
+  next(action);
+  const end = performance.now();
+  const diff = end - start;
+  console.log(diff);
+};
+
+const store = createStore(
+  reducer,
+  applyMiddleware(logMiddleware, monitorMiddleware)
+);
+store.dispatch({ type: "HELLO", payload: 2 });
+// console.log(store.getState());

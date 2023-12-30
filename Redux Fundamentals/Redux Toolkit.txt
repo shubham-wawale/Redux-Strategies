@@ -1,0 +1,103 @@
+// setting up the store
+
+export const store = configureStore({
+	reducer: {
+		tasks: taskSlice.reducer,
+		humans : humanSlice.reducer
+	}
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+// creating the taskSlice
+const createTask = (title) => {
+	id: nanoid(),
+	title: title,
+	completed: false,
+	assignedTo: "
+}
+
+
+const initialState = [
+	createTask("Order more energy drinks"),
+	createTask("Water the plants")
+]
+
+export const taskSlice = createSlice({
+	name: "tasks",
+	initialState,
+	reducers: {
+		add = (state, action) => {
+			const task  = createTask(action.payload);
+			state.push(task)
+		},
+		toggle = (state, action) => {
+			const task = state.find(task=>task.id==action.payload.taskId);
+			task.completed = action.payload.completed; 
+		},
+		assignToUser = (state, action) => {
+			const task = state.find(task=>task.id==action.payload.taskId);
+			task.assignedTo = action.payload.userId
+		}
+	}
+})
+
+export const toggleTask = createAction("tasks/toggle", (taskId, completed)=>{
+	payload: {
+		taskId,
+		completed
+	}	
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+//creating the humanSlice
+const createHuman = (name) => {
+	id: nanoid(),
+	name,
+	tasks: []
+}
+
+const initialStateHuman = [
+	createHuman("Steve"),
+	createHuman("Marc"),
+	createHuman("Tanner"),
+	createHuman("Aisha"),
+]
+
+export const humanSlice = createSlice({
+	name: "humans",
+	initialStateHuman,
+	reducers: {
+		add = (state, action) => {
+			const human  = createHuman(action.payload);
+			state.push(human)
+		},
+	}
+})
+
+//Inside task.js
+<Checkbox onChange(dispatch(taskSlice.actions.toggle({task: taskId, completed: event.target.checked}))) />
+
+//if the dispatch argument is too verbose, redux toolkit allows us to create custom actions
+<Checkbox onChange(dispatch(toggleTask(taskId, event.target.checked)) />
+
+
+// Now when a task is assigned to a user, we want that task to also go in that user's task list. So we need to fire up that action on the user re ducer as well.
+// If it was redux api, it would have been easy because every action goes through every reducer. You can easily define an action in user reducer.
+// redux toolkit allows this functionality in the form of extraReducers which listens for an action from other reducers (task reducer in this case)
+
+TaskSlice continued -------------------------------------
+export const taskSlice = creatSlice({
+	...createSlice,
+	extraReducers: (builder) => {
+		builder.addCase(taskSlice.actions.assignToUser, (state, action)=> {
+			const user = state.users.find(user => user.id===action.payload.userId);
+			user.tasks.push(action.payload.taskId);
+		}
+	}
+})
+
+
+
+

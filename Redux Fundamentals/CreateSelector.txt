@@ -1,0 +1,18 @@
+// Suppose we are computing some value in mapStateToProps based on some states, and the mapStateToProps code gets larger
+// We can then use createSelector with mapStateToProps to shift the computing logic to selectors.js
+
+// Suppose we have item price and quantity in state, and want to return the total price in some component. we can write a selector like:
+
+const selectItem = (state, props)=> {
+	return state.items.find(item => item.uuid===props.uuid);
+}
+
+const selectTotal = createSelector([selectItem],(item)=> item.price*item.quantity);
+
+
+// inside the container which is computing this value
+const mapStateToProps = (state, props) => {
+	return {
+		total: selectTotal(state, props)
+	}
+}

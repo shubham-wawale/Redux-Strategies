@@ -1,0 +1,26 @@
+// LETS SAY WE HAVE A COMPONENT WHICH DOES NOT IMPLEMENT REDUX STORE
+
+export const Component  = ({onSubmit}) =>{
+}
+
+// we can write a container component which uses connect API to connect redux store to Component
+
+const mapDispatchToProps = (dispatch, ownProps?)=> {
+	return {
+		onSubmit = ()=> dispatch(someAction(ownProps.someParameter))
+	}
+}
+
+const Container = connect(null, mapDispatchToProps)(Component);
+
+// WE CAN PASS THE STATE AS PROPS IF WE WANT SOME COMPONENT TO USE REDUX STATE
+
+const mapStateToProps = (state, ownProps?) => {
+	return {
+		items: state.items
+	}
+}
+
+const Container = connect(mapStateToProps)(Component);
+
+

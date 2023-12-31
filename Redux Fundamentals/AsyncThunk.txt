@@ -1,0 +1,44 @@
+//This text file documents how to handle async request with redux abstractions
+
+redux toolkit provides an api called createAsyncThunk which makes request to an URL, and returns the 
+response to the user so that it can handle it.
+It does not have a reducer of it's own, because it does not what type of data we are fetching
+
+// A sample createAsyncThunk function
+
+const fetchUserById = createAsyncThunk(
+  'users/fetchByIdStatus', // this is an action
+  async (userId: number, thunkAPI) => {
+    const response = await userAPI.fetchById(userId) // fetchById is a request function
+    return response.data
+  }
+)
+
+//let us define an initial state for the app
+const initialState = {
+  entities: [],
+  loading: 'false',
+}
+
+// we can add an extra reducer in the createSlice object to listen to the events/actions emitted by 
+// createAsyncThunk
+
+const usersSlice = createSlice({
+  name: 'users',
+  initialState,
+  reducers: {
+    // standard reducer logic, with auto-generated action types per reducer
+  },
+  extraReducers: (builder) => {
+    // Add reducers for additional action types here, and handle loading state as needed
+    builder.addCase(fetchUserById.fulfilled, (state, action) => {
+      // Add user to the state array
+      state.entities.push(action.payload)
+      state.loading = false;
+    })
+    builder.addCase(fetchByIdStatus.pending, (state, action)=> {
+        state.loading = true;
+    })
+  },
+})
+
